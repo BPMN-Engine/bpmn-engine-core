@@ -1,4 +1,4 @@
-package bpmn
+package engine.parser.models
 
 abstract class Gateway(
     id: String,

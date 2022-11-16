@@ -9,6 +9,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.KotlinFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import engine.parser.models.BpmnModel
 import java.io.File
 import java.nio.file.Paths
 import javax.xml.stream.XMLInputFactory
@@ -53,6 +54,7 @@ object BpmnParser {
             json,
             BpmnModel::class.java
         )
+
         return model
     }
 }

@@ -1,6 +1,6 @@
-package flows
+package engine.process_manager.flows
 
-import bpmn.DirectedElement
+import engine.parser.models.DirectedElement
 
 
 abstract class ProcessFlow(

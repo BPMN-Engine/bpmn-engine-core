@@ -1,8 +1,10 @@
-package runners
+package engine.process_manager.runners
 
-import bpmn.ServiceTask
-import bpmn.Task
-import bpmn.UserTask
+import engine.parser.models.ServiceTask
+import engine.parser.models.Task
+import engine.parser.models.UserTask
+import engine.process_manager.context.WorkflowContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.filterIsInstance
@@ -12,7 +14,6 @@ import message.Message
 import message.UserFormMessage
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import state.WorkflowState
 
 
 object TaskRunnerFactory {
@@ -33,14 +34,14 @@ object TaskRunnerFactory {
 
 interface TaskRunner : KoinComponent {
     val task: Task
-    suspend fun run(workflowState: WorkflowState): Boolean
+    suspend fun run(workflowContext: WorkflowContext): Boolean
 
 }
 
 
 class UnimplementedTaskRunner(override val task: Task) : TaskRunner {
 
-    override suspend fun run(workflowState: WorkflowState): Boolean {
+    override suspend fun run(workflowContext: WorkflowContext): Boolean {
 
         return true
     }
@@ -51,10 +52,11 @@ class UnimplementedTaskRunner(override val task: Task) : TaskRunner {
 
 class ServiceTaskRunner(override val task: ServiceTask) : TaskRunner {
 
-    override suspend fun run(workflowState: WorkflowState): Boolean {
-        val requestData: Map<String, Any?> = workflowState.dataFromInput(task.extensionElements!!.ioMapping!!.input!!)
-        println(requestData)
+    override suspend fun run(workflowContext: WorkflowContext): Boolean {
 
+
+        val d = task.name.toString().replace("task", "").toLong()
+        delay(d * 1000)
         return true
 
     }
@@ -78,13 +80,13 @@ class UserTaskRunner(override val task: UserTask) :
     MessageTaskRunner() {
 
 
-    override suspend fun run(workflowState: WorkflowState): Boolean {
+    override suspend fun run(workflowContext: WorkflowContext): Boolean {
 
         val x = runBlocking {
             channel<UserFormMessage>().first(::predicate)
         }
 
-        workflowState.updateState(x.form)
+//        workflowContext.updateState(x.form)
 
         return true
 

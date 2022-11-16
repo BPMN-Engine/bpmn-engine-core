@@ -24,6 +24,7 @@ application {
 var koin_version = "3.1.6"
 
 dependencies {
+    implementation("com.rabbitmq:amqp-client:5.16.0")
     implementation("io.insert-koin:koin-core:$koin_version")
     testImplementation ("io.insert-koin:koin-test:$koin_version")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.4.2")

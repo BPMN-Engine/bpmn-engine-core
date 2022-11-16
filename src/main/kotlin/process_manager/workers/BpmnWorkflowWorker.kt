@@ -1,34 +1,31 @@
-package workflow
+package engine.process_manager.workers
 
 import bpmn.*
-import flows.ProcessFlow
-import flows.SeqFlow
+import engine.process_manager.flows.ProcessFlow
+import engine.process_manager.flows.SeqFlow
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import message.Message
-import message.UserFormMessage
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import runners.TaskRunnerFactory
-import state.SimpleWorkflowState
+import engine.process_manager.runners.TaskRunnerFactory
+import engine.process_manager.context.SimpleWorkflowContext
+import engine.parser.models.*
 import java.util.*
 
 @OptIn(DelicateCoroutinesApi::class)
 
-class BpmnWorkflow : KoinComponent {
+class BpmnWorkflowWorker : KoinComponent {
 
 
     private val messageChannel: MutableSharedFlow<Message> by inject()
 
-    suspend fun runModel(model: BpmnModel, startEvent: StartEvent? = null) {
-        GlobalScope.launch {
-            delay(1000)
-            messageChannel.emit(UserFormMessage(mutableMapOf("test" to "leo")))
-        }
+    suspend fun createInstance(model: BpmnModel, startEvent: StartEvent? = null) {
+
 
         val process: BpmnProcess = model.process[0]
         val _id: String = UUID.randomUUID().toString()
-        val state = SimpleWorkflowState(_id)
+        val state = SimpleWorkflowContext(_id)
 
         val initialEvent = startEvent ?: process.startEvent.first()
 

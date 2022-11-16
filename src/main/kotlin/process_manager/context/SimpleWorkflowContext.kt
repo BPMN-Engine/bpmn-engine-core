@@ -1,12 +1,12 @@
-package state
+package engine.process_manager.context
 
-import bpmn.Mapping
+import engine.parser.models.Mapping
 
-class SimpleWorkflowState(override val instanceId: String) : WorkflowState {
-    var state: Map<String, Any?> = mutableMapOf()
+class SimpleWorkflowContext(override val instanceId: String) : WorkflowContext {
+    override var contextVariables: Map<String, Any?> = mutableMapOf()
 
     override suspend fun updateState(values: Map<String, Any?>) {
-        state = state.plus(values)
+        contextVariables = contextVariables.plus(values)
     }
 
     override suspend fun updateState(values: Map<String, Any?>, outputMapping: MutableList<Mapping>) {
@@ -19,16 +19,16 @@ class SimpleWorkflowState(override val instanceId: String) : WorkflowState {
 
     }
 
-    override fun dataFromInput(input: MutableList<Mapping>): Map<String, Any?> {
+    override suspend fun dataFromInput(input: MutableList<Mapping>): Map<String, Any?> {
         val data = mutableMapOf<String, Any?>()
         for (mapping in input) {
-            data[mapping.target] = state[mapping.source.replace("=", "")]
+            data[mapping.target] = contextVariables[mapping.source.replace("=", "")]
         }
         return data
     }
 
     override fun toString(): String {
-        return "SimpleWorkflowState(state=$state)"
+        return "SimpleWorkflowState(state=$contextVariables)"
     }
 
 

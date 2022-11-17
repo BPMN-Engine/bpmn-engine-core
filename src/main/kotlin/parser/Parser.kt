@@ -1,5 +1,6 @@
 package bpmn
 
+import BpmnModel
 import com.ctc.wstx.stax.WstxInputFactory
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonNode
@@ -9,7 +10,6 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper
 import com.fasterxml.jackson.module.kotlin.KotlinFeature
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import engine.parser.models.BpmnModel
 import java.io.File
 import java.nio.file.Paths
 import javax.xml.stream.XMLInputFactory

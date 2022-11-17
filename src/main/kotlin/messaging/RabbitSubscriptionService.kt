@@ -1,17 +1,18 @@
 package com.leo.service
 
-import engine.parser.models.BpmnModel
-import bpmn.BpmnParser
-import com.rabbitmq.client.*
-import kotlinx.coroutines.flow.MutableSharedFlow
+ import com.rabbitmq.client.*
+ import engine.messaging.message.StartInstanceMessage
+ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.runBlocking
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.qualifier.named
 
 
+
+
 class RabbitSubscriptionService : KoinComponent {
-    private val instanceInitiator: MutableSharedFlow<BpmnModel> by inject(qualifier = named("modelFlow"))
+    private val instanceInitiator: MutableSharedFlow<StartInstanceMessage> by inject( )
 
     private val connectionFactory: ConnectionFactory = ConnectionFactory()
 
@@ -88,7 +89,7 @@ class RabbitSubscriptionService : KoinComponent {
             println("delivered")
 
             runBlocking {
-                instanceInitiator.emit(BpmnParser.parse())
+
                 c.basicAck(delivery.envelope.deliveryTag, false)
             }
         }

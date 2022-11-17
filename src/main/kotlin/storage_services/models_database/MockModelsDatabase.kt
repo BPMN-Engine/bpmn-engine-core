@@ -1,6 +1,6 @@
 package engine.database_connector.models_database
 
-import engine.parser.models.BpmnModel
+import BpmnModel
 
 class MockModelsDatabase : ModelsDatabase {
 

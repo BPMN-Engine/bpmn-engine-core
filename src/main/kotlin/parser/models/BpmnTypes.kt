@@ -1,7 +1,5 @@
-package engine.parser.models
 
 import com.fasterxml.jackson.annotation.*
-import engine.parser.models.*
 
 
 data class BpmnModel(

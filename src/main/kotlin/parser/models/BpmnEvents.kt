@@ -1,4 +1,3 @@
-package engine.parser.models
 
 
 abstract class Event(

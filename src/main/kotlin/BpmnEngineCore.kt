@@ -1,8 +1,7 @@
 package engine
 
 
-import engine.parser.models.BpmnModel
-import bpmn.BpmnParser
+import engine.messaging.message.StartInstanceMessage
 import engine.shared.koinModule
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -12,7 +11,6 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.startKoin
 import org.koin.core.qualifier.named
-import engine.process_manager.workers.BpmnWorkflowWorker
 
 
 fun main() {
@@ -28,7 +26,7 @@ fun main() {
 
 
 class BpmnEngineCore : KoinComponent {
-    private val instanceInitiator: MutableSharedFlow<BpmnModel> by inject(qualifier = named("modelFlow"))
+    private val instanceInitiator: MutableSharedFlow<StartInstanceMessage> by inject()
 //    private val rabbitSubscriptionService: RabbitSubscriptionService by inject()
 
     @OptIn(DelicateCoroutinesApi::class)
@@ -36,15 +34,12 @@ class BpmnEngineCore : KoinComponent {
         println("Initialized core")
 
         GlobalScope.launch {
-            delay(100)
-            instanceInitiator.emit(BpmnParser.parse())
-//            rabbitSubscriptionService.startListening();
-        }
+            instanceInitiator.emit(StartInstanceMessage(modelId = "test"))
+         }
 
         instanceInitiator.onEach {
             val job = GlobalScope.async {
-                val workflow: BpmnWorkflowWorker = BpmnWorkflowWorker()
-                withContext(Dispatchers.Default) { workflow.createInstance(it) }
+                 withContext(Dispatchers.Default) {   }
             }
             job.start()
         }.collect()

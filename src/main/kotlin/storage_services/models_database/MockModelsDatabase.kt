@@ -1,8 +1,11 @@
 package engine.database_connector.models_database
 
 import BpmnModel
+import bpmn.BpmnParser
+import engine.storage_services.models_database.ModelsDatabase
 
 class MockModelsDatabase : ModelsDatabase {
+
 
     val models = mutableListOf<BpmnModel>()
 
@@ -16,7 +19,11 @@ class MockModelsDatabase : ModelsDatabase {
         return model
     }
 
-    override suspend fun connectToDatabase() {
+    override suspend fun getModelById(modelId: String, versionId: String?): BpmnModel {
+        return models.first()
+    }
 
+    override suspend fun connectToDatabase() {
+        saveModel(BpmnParser.parse())
     }
 }

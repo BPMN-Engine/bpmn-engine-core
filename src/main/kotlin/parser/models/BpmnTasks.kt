@@ -1,4 +1,8 @@
+package engine.parser.models
 
+import BasicExtensionElements
+import ExtensionElements
+import RunnableDirectedElement
 
 abstract class Task(
     id: String,
@@ -8,7 +12,7 @@ abstract class Task(
     open val extensionElements: ExtensionElements?,
 
     ) :
-    DirectedElement(id, name, outgoing, incoming)
+    RunnableDirectedElement(id, name, outgoing, incoming)
 
 data class ManualTask(
     override val id: String, override val name: String,

@@ -1,4 +1,7 @@
+package engine.parser.models
 
+import DirectedElement
+import RunnableDirectedElement
 
 abstract class Event(
     id: String,
@@ -7,7 +10,7 @@ abstract class Event(
     override val incoming: MutableList<String>?
 
 ) :
-    DirectedElement(id, name, outgoing, incoming)
+    RunnableDirectedElement(id, name, outgoing, incoming)
 
 
 data class StartEvent(

@@ -1,6 +1,7 @@
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonRootName
+import engine.parser.models.*
 
 @JsonRootName("process")
 data class BpmnProcess constructor(
@@ -28,6 +29,8 @@ data class BpmnProcess constructor(
     fun elementForId(id: String): DirectedElement {
         return steps.find { it.id == id }!!
     }
+
+
 
     val tasks: MutableList<Task> = (userTask + manualTask + serviceTask + sendTask).toMutableList()
     val events: MutableList<Event> = (startEvent + endEvent).toMutableList()

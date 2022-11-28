@@ -1,14 +1,11 @@
-package com.leo.service
+package engine.messaging.instance_message_service
 
  import com.rabbitmq.client.*
- import engine.messaging.message.StartInstanceMessage
+ import engine.messaging.instance_message_service.messages.StartInstanceMessage
  import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.runBlocking
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import org.koin.core.qualifier.named
-
-
 
 
 class RabbitSubscriptionService : KoinComponent {
@@ -64,8 +61,7 @@ class RabbitSubscriptionService : KoinComponent {
             getChannel().queueDeclarePassive(QUEUE)
 
         } catch (e: Exception) {
-            println(e)
-            getChannel().queueDeclare(QUEUE, true, false, false, emptyMap())
+             getChannel().queueDeclare(QUEUE, true, false, false, emptyMap())
 
 
         }

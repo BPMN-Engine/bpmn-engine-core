@@ -24,6 +24,9 @@ application {
 var koin_version = "3.1.6"
 
 dependencies {
+    implementation("org.litote.kmongo:kmongo:4.7.2")
+    implementation("org.litote.kmongo:kmongo-async:4.7.2")
+    implementation("org.litote.kmongo:kmongo-coroutine:4.7.2")
     implementation("com.rabbitmq:amqp-client:5.16.0")
     implementation("io.insert-koin:koin-core:$koin_version")
     testImplementation ("io.insert-koin:koin-test:$koin_version")

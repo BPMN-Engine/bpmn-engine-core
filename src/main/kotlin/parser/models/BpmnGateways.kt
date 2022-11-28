@@ -1,3 +1,19 @@
+package engine.parser.models
+
+import DirectedElement
+
+enum class GatewayMerge {
+    DIVERGING,
+    CONVERGING;
+
+    companion object {
+        fun fromGateway(gateway: Gateway): GatewayMerge {
+                return GatewayMerge.CONVERGING
+        }
+    }
+
+}
+
 
 abstract class Gateway(
     id: String,
@@ -6,7 +22,11 @@ abstract class Gateway(
     override val incoming: MutableList<String>?
 
 ) :
-    DirectedElement(id, name, outgoing, incoming)
+    DirectedElement(id, name, outgoing, incoming) {
+
+    val gatewayMerge: GatewayMerge by lazy { GatewayMerge.fromGateway(gateway = this) }
+
+}
 
 data class ExclusiveGateway(
     override val id: String,

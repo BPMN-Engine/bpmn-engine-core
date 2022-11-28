@@ -1,12 +1,15 @@
-
-import com.fasterxml.jackson.annotation.*
+import com.fasterxml.jackson.annotation.JsonFormat
 
 
 data class BpmnModel(
     @JsonFormat(with = [JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY])
     val process: MutableList<BpmnProcess>,
     val id: String
-)
+) {
+    fun getProcessById(id: String): BpmnProcess {
+return process.first { it.id==id }
+    }
+}
 
 
 abstract class BpmnElement(
@@ -21,6 +24,15 @@ abstract class DirectedElement(
     open val outgoing: MutableList<String>?,
 
     ) : BpmnElement(id, name = name ?: id)
+
+
+abstract class RunnableDirectedElement(
+    id: String,
+    name: String?,
+    override val incoming: MutableList<String>?,
+    override val outgoing: MutableList<String>?,
+
+    ) : DirectedElement(id, name = name ?: id, incoming,outgoing)
 
 
 abstract class ExtensionElements(

@@ -7,6 +7,8 @@ enum class EventState {
     RUNNING, ERROR, FINISH,
 }
 
+typealias EventId = String
+
 interface ActivityEventLogService : DatabaseConnector {
     suspend fun addEvent(event: LoggedEventDocument)
     suspend fun getEvent(taskId: String, threadId: String, eventState: EventState? = null): LoggedEventDocument?

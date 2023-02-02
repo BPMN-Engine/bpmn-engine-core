@@ -1,6 +1,5 @@
 package engine.parser.models
 
-import DirectedElement
 import RunnableDirectedElement
 
 abstract class Event(

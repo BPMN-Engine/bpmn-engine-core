@@ -1,9 +1,24 @@
 package engine.messaging.receive_message
 
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+import engine.messaging.Message
+import engine.messaging.task_message_service.messages.ServiceTaskMessage
+import engine.messaging.task_message_service.messages.StartEventMessage
 import engine.process_manager.models.Variables
 
-abstract class ReceiveMessage
+abstract class ReceiveMessage : Message
 
+
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "type")
+@JsonSubTypes(
+    JsonSubTypes.Type(value = TaskStartMessage::class, name = "TaskStartMessage"),
+    JsonSubTypes.Type(value = TaskCompleteMessage::class, name = "TaskCompleteMessage"),
+    JsonSubTypes.Type(value = TaskFailedMessage::class, name = "TaskFailedMessage"),
+)
 abstract class TaskReceiveMessage(
     open val instanceId: String,
     open val taskId: String,

@@ -7,7 +7,7 @@ data class BpmnModel(
     val id: String
 ) {
     fun getProcessById(id: String): BpmnProcess {
-return process.first { it.id==id }
+        return process.first { it.id == id }
     }
 }
 
@@ -32,7 +32,7 @@ abstract class RunnableDirectedElement(
     override val incoming: MutableList<String>?,
     override val outgoing: MutableList<String>?,
 
-    ) : DirectedElement(id, name = name ?: id, incoming,outgoing)
+    ) : DirectedElement(id, name = name ?: id, incoming, outgoing)
 
 
 abstract class ExtensionElements(

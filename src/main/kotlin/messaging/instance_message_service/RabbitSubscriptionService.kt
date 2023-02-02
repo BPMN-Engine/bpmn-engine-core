@@ -1,15 +1,15 @@
 package engine.messaging.instance_message_service
 
- import com.rabbitmq.client.*
- import engine.messaging.instance_message_service.messages.StartInstanceMessage
- import kotlinx.coroutines.flow.MutableSharedFlow
+import com.rabbitmq.client.*
+import engine.messaging.instance_message_service.messages.StartInstanceMessage
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.runBlocking
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 
 class RabbitSubscriptionService : KoinComponent {
-    private val instanceInitiator: MutableSharedFlow<StartInstanceMessage> by inject( )
+    private val instanceInitiator: MutableSharedFlow<StartInstanceMessage> by inject()
 
     private val connectionFactory: ConnectionFactory = ConnectionFactory()
 
@@ -47,7 +47,7 @@ class RabbitSubscriptionService : KoinComponent {
     }
 
     fun getChannel(): Channel {
-        if (!channel.isOpen()) {
+        if (!channel.isOpen) {
             channel = connection.createChannel()
         }
         return channel
@@ -61,14 +61,14 @@ class RabbitSubscriptionService : KoinComponent {
             getChannel().queueDeclarePassive(QUEUE)
 
         } catch (e: Exception) {
-             getChannel().queueDeclare(QUEUE, true, false, false, emptyMap())
+            getChannel().queueDeclare(QUEUE, true, false, false, emptyMap())
 
 
         }
         try {
             getChannel().queueBind(QUEUE, EXCHANGE, INSTANCE_NAME)
 
-        } catch (e:Exception) {
+        } catch (e: Exception) {
             println(e)
 
         }
@@ -79,7 +79,7 @@ class RabbitSubscriptionService : KoinComponent {
     fun startListening() {
 
         println("Listening")
-        val c =              connection.createChannel()
+        val c = connection.createChannel()
 
         val deliverCallback = DeliverCallback { consumerTag: String, delivery: Delivery ->
             println("delivered")

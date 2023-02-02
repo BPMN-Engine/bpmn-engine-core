@@ -11,11 +11,11 @@ class MockModelsDatabase : ModelsDatabase {
 
 
     override suspend fun getModels(): List<BpmnModel> {
-        return models;
+        return models
     }
 
     override suspend fun saveModel(model: BpmnModel): BpmnModel {
-        models.add(model);
+        models.add(model)
         return model
     }
 

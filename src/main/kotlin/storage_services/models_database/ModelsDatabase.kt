@@ -7,5 +7,5 @@ import engine.storage_services.DatabaseConnector
 interface ModelsDatabase : DatabaseConnector {
     suspend fun getModels(): List<BpmnModel>
     suspend fun saveModel(model: BpmnModel): BpmnModel
-    suspend fun getModelById(modelId: String, versionId: String?=null): BpmnModel
+    suspend fun getModelById(modelId: String, versionId: String? = null): BpmnModel
 }

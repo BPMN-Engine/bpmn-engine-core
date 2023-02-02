@@ -24,6 +24,7 @@ application {
 var koin_version = "3.1.6"
 
 dependencies {
+    implementation("redis.clients:jedis:4.3.1")
     implementation("org.litote.kmongo:kmongo:4.7.2")
     implementation("org.litote.kmongo:kmongo-async:4.7.2")
     implementation("org.litote.kmongo:kmongo-coroutine:4.7.2")

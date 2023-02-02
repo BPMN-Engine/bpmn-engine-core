@@ -1,4 +1,3 @@
-
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class SequenceFlow(

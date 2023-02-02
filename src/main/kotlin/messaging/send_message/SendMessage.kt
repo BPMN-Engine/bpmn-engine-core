@@ -1,8 +1,9 @@
 package engine.messaging.message
 
-import engine.process_manager.models.Variables
+import engine.messaging.Message
 
-abstract class SendMessage
+abstract class SendMessage : Message
+
 
 
 

@@ -8,7 +8,7 @@ enum class GatewayMerge {
 
     companion object {
         fun fromGateway(gateway: Gateway): GatewayMerge {
-                return GatewayMerge.CONVERGING
+            return CONVERGING
         }
     }
 

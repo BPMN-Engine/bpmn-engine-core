@@ -10,21 +10,17 @@ import kotlinx.coroutines.*
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.context.startKoin
+import java.time.Instant
+import java.util.*
 import kotlin.system.measureTimeMillis
 
 @OptIn(DelicateCoroutinesApi::class)
 suspend fun main() {
-
-
     startKoin { modules(koinModule) }
-
     val core = BpmnEngineCore()
-
-
     core.run()
-
-
 }
+
 
 
 class BpmnEngineCore : KoinComponent {
@@ -34,34 +30,33 @@ class BpmnEngineCore : KoinComponent {
     private val taskMessagingService: TaskMessagingService by inject()
 
     suspend fun run() {
-        val job = processManager.setup();
+        val job = processManager.setup()
         job.start()
 
         instanceMessagingService.setup()
         taskMessagingService.setup()
 
-        GlobalScope.launch {
-            delay(100)
+//        GlobalScope.launch {
+//            delay(100)
+//
+//            val duration = measureTimeMillis {
+//                repeat(1) {
+//                    println(Instant.now().toEpochMilli())
+//                    instanceMessagingService.handleMessage(
+//                        StartInstanceMessage(
+//                            modelId = "test",
+//                            processId = "Process_0c2yfbx"
+//                        )
+//                    )
+//
+//                }
+//            }
+//
+//
+//        }
 
-            val duration = measureTimeMillis {
-                repeat(2) {
-                     instanceMessagingService.handleMessage(
-                        StartInstanceMessage(
-                            modelId = "test",
-                            processId = "Process_0c2yfbx"
-                        )
-                    )
 
-                }
-            }
-
-
-
-
-        }
-
-
-        job.join();
+        job.join()
         /*
 
         logged event

@@ -10,7 +10,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import org.koin.core.component.inject
 import org.koin.core.qualifier.named
-import java.util.concurrent.Executors
+import java.util.Random
+import kotlin.reflect.jvm.internal.impl.types.model.RawTypeMarker
 
 @OptIn(DelicateCoroutinesApi::class)
 class MockTaskMessagingService : TaskMessagingService {
@@ -19,11 +20,14 @@ class MockTaskMessagingService : TaskMessagingService {
     private val taskMessage: MutableSharedFlow<TaskSendMessage> by inject(named<TaskSendMessage>())
     private val activityEventLogService: ActivityEventLogService by inject()
     private val taskReceiveMessage: MutableSharedFlow<TaskReceiveMessage> by inject(named<TaskReceiveMessage>())
+
+    @OptIn(ExperimentalCoroutinesApi::class)
     val taskExecutor = Dispatchers.IO.limitedParallelism(1800)
+
     override suspend fun setup(): MessagingService {
         GlobalScope.launch {
             taskMessage.map { it }.flowOn(taskExecutor).onEach {
-          launch(taskExecutor) {     dispatchMessage(it) }
+                launch(taskExecutor) { dispatchMessage(it) }
             }.collect()
         }
         return this
@@ -31,40 +35,36 @@ class MockTaskMessagingService : TaskMessagingService {
 
     }
 
-     override suspend fun dispatchMessage(message: TaskSendMessage) {
+    override suspend fun dispatchMessage(message: TaskSendMessage) {
         // dispatch to rmq queue, for mocking purpose autohandle it
 
 
+        delay(100)
+        handleMessage(
+            TaskStartMessage(
+                instanceId = message.instanceId,
+                taskId = message.taskId,
+                elementId = message.elementId,
+                threadId = message.threadId,
+            )
+        )
+        delay(100+((0..0).random() ).toLong())
 
-             delay(100)
-             handleMessage(
-                 TaskStartMessage(
-                     instanceId = message.instanceId,
-                     taskId = message.taskId,
-                     elementId = message.elementId,
-                     threadId = message.threadId,
-                 )
-             )
-             delay(100)
-             handleMessage(
-                 TaskCompleteMessage(
-                     instanceId = message.instanceId,
-                     taskId = message.taskId,
-                     taskVariables = mutableMapOf("testkey" to "key"),
-                     elementId = message.elementId,
-                     threadId = message.threadId,
-
-                     )
-             )
-
+        handleMessage(
+            TaskCompleteMessage(
+                instanceId = message.instanceId,
+                taskId = message.taskId,
+                taskVariables = mutableMapOf("testkey" to "key"),
+                elementId = message.elementId,
+                threadId = message.threadId,
+                )
+        )
 
 
     }
 
     override suspend fun handleMessage(message: TaskReceiveMessage) {
-
-            taskReceiveMessage.emit(message)
-
+        taskReceiveMessage.emit(message)
     }
 
 

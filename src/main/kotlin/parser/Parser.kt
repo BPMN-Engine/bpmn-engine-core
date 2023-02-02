@@ -13,7 +13,7 @@ import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import java.io.File
 import java.nio.file.Paths
 import javax.xml.stream.XMLInputFactory
-
+val jsonMapper = ObjectMapper()
 object BpmnParser {
     fun parse(): BpmnModel {
         val module = JacksonXmlModule()
@@ -25,11 +25,11 @@ object BpmnParser {
         val xmlMapper = XmlMapper(module).registerKotlinModule()
         val path = Paths.get("").toAbsolutePath().toString()
 
-        val file = File("kotlin-bpmn-engine/resources/test.bpmn")
+        val file = File("resources/test.bpmn")
         val node: JsonNode = xmlMapper.readTree(file.readBytes())
 
 
-        val jsonMapper = ObjectMapper().configure(
+        jsonMapper .configure(
             DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
             false
         ).configure(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES, false)
@@ -48,7 +48,7 @@ object BpmnParser {
         jsonMapper.registerModule(kotlinModule)
         val json: String = jsonMapper.writeValueAsString(node)
 
-        File("kotlin-bpmn-engine/resources/output.json").writeText(json)
+        File("resources/output.json").writeText(json)
 
         val model = jsonMapper.readValue(
             json,

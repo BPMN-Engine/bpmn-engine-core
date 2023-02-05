@@ -32,6 +32,13 @@ data class StartEventMessage(
     override val threadId: String,
     override val elementId: String
 ) : TaskSendMessage(instanceId, taskId, sendVariables, threadId, elementId)
+data class UserFromMessage(
+    override val sendVariables: Variables,
+    override val instanceId: String,
+    override val taskId: String,
+    override val threadId: String,
+    override val elementId: String
+) : TaskSendMessage(instanceId, taskId, sendVariables, threadId, elementId)
 
 data class ServiceTaskMessage(
     override val sendVariables: Variables,

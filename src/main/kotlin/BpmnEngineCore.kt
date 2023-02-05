@@ -36,24 +36,25 @@ class BpmnEngineCore : KoinComponent {
         instanceMessagingService.setup()
         taskMessagingService.setup()
 
-//        GlobalScope.launch {
-//            delay(100)
-//
-//            val duration = measureTimeMillis {
-//                repeat(1) {
-//                    println(Instant.now().toEpochMilli())
-//                    instanceMessagingService.handleMessage(
-//                        StartInstanceMessage(
-//                            modelId = "test",
-//                            processId = "Process_0c2yfbx"
-//                        )
-//                    )
-//
-//                }
-//            }
-//
-//
-//        }
+//        if(false)
+        GlobalScope.launch {
+            delay(100)
+
+            val duration = measureTimeMillis {
+                repeat(1000) {
+                    println(Instant.now().toEpochMilli())
+                    instanceMessagingService.handleMessage(
+                        StartInstanceMessage(
+                            modelId = "test",
+                            processId = "Process_0c2yfbx"
+                        )
+                    )
+
+                }
+            }
+
+
+        }
 
 
         job.join()

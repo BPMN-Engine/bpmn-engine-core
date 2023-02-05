@@ -8,6 +8,7 @@ import engine.messaging.receive_message.TaskReceiveMessage
 import engine.messaging.task_message_service.messages.ServiceTaskMessage
 import engine.messaging.task_message_service.messages.StartEventMessage
 import engine.messaging.task_message_service.messages.TaskSendMessage
+import engine.messaging.task_message_service.messages.UserFromMessage
 import engine.process_manager.models.Variables
 import java.net.URI
 import java.net.http.HttpClient
@@ -23,6 +24,7 @@ object TaskRunnerFactory {
             when (message) {
                 is ServiceTaskMessage -> ServiceTaskRunner(task = message)
                 is StartEventMessage -> StartEventTaskRunner(task = message)
+                is UserFromMessage -> UserFromRunner(task = message)
                 else -> UnimplementedTaskRunner(task = message)
             //            else -> throw NotImplementedError("Not implemented for $task")
             }
@@ -60,7 +62,7 @@ class UnimplementedTaskRunner(override val task: TaskSendMessage) : TaskRunner {
     }
 }
 
-val client = HttpClient.newHttpClient()
+val client = HttpClient.newBuilder().build()
 
 class ServiceTaskRunner(override val task: ServiceTaskMessage) : TaskRunner {
 
@@ -68,11 +70,11 @@ class ServiceTaskRunner(override val task: ServiceTaskMessage) : TaskRunner {
     override suspend fun run(): Variables {
 
         val requestBody: String = jsonMapper.writeValueAsString(task.sendVariables)
-
+        println("body $requestBody")
         val request =
             HttpRequest.newBuilder()
                 .uri(URI.create(task.url))
-                .method(task.method, BodyPublishers.ofString(requestBody))
+                .method(task.method.toUpperCase(), BodyPublishers.ofString(requestBody))
                 .build()
 
         val response =
@@ -81,11 +83,25 @@ class ServiceTaskRunner(override val task: ServiceTaskMessage) : TaskRunner {
                 }
                 .await()
 
-        return jsonMapper.readValue(response.body())
+        try {
+            return jsonMapper.readValue(response.body())
+        } catch (e: Exception) {
+            println("task id ${task.elementId}")
+            println("request url ${request.uri()}")
+            println("request body ${request.bodyPublisher()}")
+            throw e
+        }
     }
 }
 
 class StartEventTaskRunner(override val task: StartEventMessage) : TaskRunner {
+
+    override suspend fun run(): Variables {
+        return task.sendVariables
+    }
+}
+
+class UserFromRunner(override val task: UserFromMessage) : TaskRunner {
 
     override suspend fun run(): Variables {
         return task.sendVariables

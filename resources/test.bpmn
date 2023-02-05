@@ -11,29 +11,29 @@
     <bpmn:endEvent id="end" name="end">
       <bpmn:incoming>Flow_0xsiwux</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:parallelGateway id="Gateway_0qjdxt1">
+    <bpmn:parallelGateway id="Fork" name="Fork">
       <bpmn:incoming>Flow_1wrwfgk</bpmn:incoming>
       <bpmn:outgoing>Flow_16deywg</bpmn:outgoing>
       <bpmn:outgoing>Flow_1jx95zy</bpmn:outgoing>
     </bpmn:parallelGateway>
-    <bpmn:sequenceFlow id="Flow_1wrwfgk" sourceRef="StartEvent_1" targetRef="Gateway_0qjdxt1" />
-    <bpmn:sequenceFlow id="Flow_16deywg" sourceRef="Gateway_0qjdxt1" targetRef="st1" />
+    <bpmn:sequenceFlow id="Flow_1wrwfgk" sourceRef="StartEvent_1" targetRef="Fork" />
+    <bpmn:sequenceFlow id="Flow_16deywg" sourceRef="Fork" targetRef="st1" />
     <bpmn:sequenceFlow id="Flow_1eha2ao" sourceRef="st1" targetRef="st3" />
-    <bpmn:sequenceFlow id="Flow_1jx95zy" sourceRef="Gateway_0qjdxt1" targetRef="st2" />
+    <bpmn:sequenceFlow id="Flow_1jx95zy" sourceRef="Fork" targetRef="st2" />
     <bpmn:sequenceFlow id="Flow_09b4rg9" sourceRef="st2" targetRef="st4" />
-    <bpmn:parallelGateway id="Gateway_159yvdv">
+    <bpmn:parallelGateway id="Merge" name="Merge">
       <bpmn:incoming>Flow_0dt2uyi</bpmn:incoming>
       <bpmn:incoming>Flow_0dlw7wk</bpmn:incoming>
       <bpmn:outgoing>Flow_0xsiwux</bpmn:outgoing>
     </bpmn:parallelGateway>
-    <bpmn:sequenceFlow id="Flow_0dt2uyi" sourceRef="st3" targetRef="Gateway_159yvdv" />
-    <bpmn:sequenceFlow id="Flow_0dlw7wk" sourceRef="st4" targetRef="Gateway_159yvdv" />
-    <bpmn:sequenceFlow id="Flow_0xsiwux" sourceRef="Gateway_159yvdv" targetRef="end" />
+    <bpmn:sequenceFlow id="Flow_0dt2uyi" sourceRef="st3" targetRef="Merge" />
+    <bpmn:sequenceFlow id="Flow_0dlw7wk" sourceRef="st4" targetRef="Merge" />
+    <bpmn:sequenceFlow id="Flow_0xsiwux" sourceRef="Merge" targetRef="end" />
     <bpmn:serviceTask id="st3" name="task3">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="http" />
         <zeebe:taskHeaders>
-          <zeebe:header key="url" value="https://jsonplaceholder.typicode.com/todos/1" />
+          <zeebe:header key="url" value="https://dummyjson.com/products/1" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1eha2ao</bpmn:incoming>
@@ -43,7 +43,7 @@
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="http" />
         <zeebe:taskHeaders>
-          <zeebe:header key="url" value="https://jsonplaceholder.typicode.com/todos/1" />
+          <zeebe:header key="url" value="https://dummyjson.com/products/1" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_09b4rg9</bpmn:incoming>
@@ -53,7 +53,7 @@
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="http" />
         <zeebe:taskHeaders>
-          <zeebe:header key="url" value="https://jsonplaceholder.typicode.com/todos/1" />
+          <zeebe:header key="url" value="https://dummyjson.com/products/1" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_1jx95zy</bpmn:incoming>
@@ -63,7 +63,8 @@
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="http" />
         <zeebe:taskHeaders>
-          <zeebe:header key="url" value="https://jsonplaceholder.typicode.com/todos/1" />
+          <zeebe:header key="url" value="https://dummyjson.com/products/1" />
+          <zeebe:header key="method" value="GET" />
         </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_16deywg</bpmn:incoming>
@@ -93,11 +94,17 @@
           <dc:Bounds x="801" y="218" width="19" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Gateway_1bykuhe_di" bpmnElement="Gateway_0qjdxt1">
+      <bpmndi:BPMNShape id="Gateway_1bykuhe_di" bpmnElement="Fork">
         <dc:Bounds x="315" y="235" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="410" y="250" width="22" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="BPMNShape_0zh0jx6" bpmnElement="Gateway_159yvdv">
+      <bpmndi:BPMNShape id="BPMNShape_0zh0jx6" bpmnElement="Merge">
         <dc:Bounds x="685" y="235" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="614" y="250" width="32" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="BPMNShape_0c1tzmw" bpmnElement="st3">
         <dc:Bounds x="560" y="150" width="100" height="80" />

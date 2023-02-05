@@ -4,6 +4,7 @@ package engine.process_manager
 
 import BpmnProcess
 import DirectedElement
+import Mapping
 import engine.database_connector.activity_event_log.ActivityEventLogService
 import engine.database_connector.activity_event_log.EventState
 import engine.messaging.instance_message_service.messages.InstanceMessage
@@ -29,12 +30,14 @@ import java.util.*
 import java.util.concurrent.Executors
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withLock
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.qualifier.named
+import java.util.concurrent.ConcurrentHashMap
+
+private val semaphoreMap = ConcurrentHashMap<String, Semaphore>()
+ val taskExecutor = Executors.newFixedThreadPool(1000).asCoroutineDispatcher()
 
 class ProcessManager : KoinComponent {
     private val modelsDatabase: ModelsDatabase by inject()
@@ -46,10 +49,9 @@ class ProcessManager : KoinComponent {
     private val taskReceiveMessage: MutableSharedFlow<TaskReceiveMessage> by
         inject(named<TaskReceiveMessage>())
 
-    private val instanceExecutor = Executors.newFixedThreadPool(180).asCoroutineDispatcher()
+    private val instanceExecutor = Executors.newFixedThreadPool(1000).asCoroutineDispatcher()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    private val taskExecutor = Executors.newFixedThreadPool(1800).asCoroutineDispatcher()
+
 
     suspend fun setup(): Job {
         setupDatabases()
@@ -152,7 +154,6 @@ class ProcessManager : KoinComponent {
         return runnableTasks
     }
 
-
     private suspend fun handleTaskReceiveMessage(it: TaskReceiveMessage) {
 
         val instance = instanceLogService.getInstance(it.instanceId)
@@ -178,7 +179,12 @@ class ProcessManager : KoinComponent {
             is TaskCompleteMessage -> {
                 val threadVariables = instanceLogService.getVariables(it.threadId, it.instanceId)
 
-                vars = threadVariables + it.taskVariables
+                var mapped = it.taskVariables
+                if (currentTask is Task) {
+                    mapped = mapped.mapVariables(currentTask.extensionElements?.ioMapping?.output)
+                }
+
+                vars = threadVariables + mapped
 
                 instanceLogService.saveVariables(
                     variables = vars,
@@ -188,12 +194,11 @@ class ProcessManager : KoinComponent {
             }
         }
 
-
         var semaphore = semaphoreMap.putIfAbsent(it.instanceId, Semaphore(1))
-        if(semaphore==null){
-            semaphore = semaphoreMap[it.instanceId]!!;
+        if (semaphore == null) {
+            semaphore = semaphoreMap[it.instanceId]!!
         }
-        semaphore.acquire();
+        semaphore.acquire()
         // Save event to db
         activityLogService.addEvent(
             LoggedEventDocument(
@@ -206,11 +211,10 @@ class ProcessManager : KoinComponent {
             )
         )
         if (it is TaskCompleteMessage) {
-                continueWorkflowFromCurrentTask(currentTask, process, it, vars!!)
-            }
-        semaphore.release();
+            continueWorkflowFromCurrentTask(currentTask, process, it, vars!!)
+        }
+        semaphore.release()
     }
-    private val semaphoreMap = HashMap<String, Semaphore>()
 
     private suspend fun continueWorkflowFromCurrentTask(
         currentTask: DirectedElement,
@@ -243,12 +247,20 @@ class ProcessManager : KoinComponent {
                         is ServiceTask -> {
                             taskMessages.emit(
                                 ServiceTaskMessage(
-                                    sendVariables = variables,
+                                    sendVariables =
+                                        variables.mapVariables(
+                                            (el.runnable as ServiceTask)
+                                                ?.extensionElements
+                                                ?.ioMapping
+                                                ?.input
+                                        ),
                                     instanceId = it.instanceId,
                                     taskId = UUID.randomUUID().toString().replace("-", ""),
                                     threadId = el.threadId,
                                     elementId = el.runnable.id,
-                                    url = "https://google.hr"
+                                    method =
+                                        (el.runnable as ServiceTask).extensionElements!!.method!!,
+                                    url = (el.runnable as ServiceTask).extensionElements!!.url!!
                                 )
                             )
                         }
@@ -267,12 +279,29 @@ class ProcessManager : KoinComponent {
                     }
 
                     println("Sent ${el.runnable.name}")
+                    if(el.runnable.name=="end")
+                        println("Workflow done ${Instant.now().toEpochMilli()}")
+
                 }
             }
         }
 
         if (currentTask is EndEvent) {
-            println("Workflow done")
+
+
+            println("Workflow done ${Instant.now().toEpochMilli()}")
         }
+    }
+
+    fun Variables.mapVariables(mapping: MutableList<Mapping>?): Variables {
+        val newMapping = mutableMapOf<String, Any?>()
+
+        if (mapping != null) {
+            for (m in mapping) {
+                newMapping[m.target] = this[m.source]
+            }
+        }
+
+        return newMapping
     }
 }

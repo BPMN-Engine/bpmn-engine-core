@@ -22,7 +22,7 @@ class MockTaskMessagingService : TaskMessagingService {
     private val taskReceiveMessage: MutableSharedFlow<TaskReceiveMessage> by inject(named<TaskReceiveMessage>())
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val taskExecutor = Dispatchers.IO.limitedParallelism(1800)
+    val taskExecutor = Dispatchers.IO.limitedParallelism(1000)
 
     override suspend fun setup(): MessagingService {
         GlobalScope.launch {

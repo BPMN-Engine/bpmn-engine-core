@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import com.rabbitmq.client.*
 import engine.database_connector.activity_event_log.ActivityEventLogService
 import engine.messaging.MessagingService
+import engine.messaging.receive_message.TaskFailedMessage
 import engine.messaging.receive_message.TaskReceiveMessage
 import engine.messaging.receive_message.TaskStartMessage
 import engine.messaging.task_message_service.messages.TaskSendMessage
@@ -24,7 +25,7 @@ class RabbitTaskMessagingService : TaskMessagingService {
         inject(named<TaskReceiveMessage>())
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val taskExecutor = Dispatchers.IO.limitedParallelism(1800)
+    val taskExecutor = Dispatchers.IO.limitedParallelism(1000)
 
     private val connectionFactory: ConnectionFactory = ConnectionFactory()
     private lateinit var connection: Connection
@@ -37,6 +38,13 @@ class RabbitTaskMessagingService : TaskMessagingService {
         val EXCHANGE = "task_exchange$newq"
         val QUEUE = "send_message_queue$newq"
         val REC_QUEUE = "rec_message_queue$newq"
+
+
+
+    }
+
+    init {
+        println(EXCHANGE)
     }
 
     fun getChannel(): Channel {
@@ -64,11 +72,11 @@ class RabbitTaskMessagingService : TaskMessagingService {
         setupReceiveChannel()
 
         val deliverCallback = DeliverCallback { consumerTag: String?, delivery: Delivery ->
-            try {
-                val message: TaskSendMessage = jsonMapper.readValue(delivery.body)
-                println("Task send  ${message.javaClass.name}  ${message.elementId}")
+            GlobalScope.launch(taskExecutor) {
+                try {
+                    val message: TaskSendMessage = jsonMapper.readValue(delivery.body)
+                    println("Task send  ${message.javaClass.simpleName}  ${message.elementId}")
 
-                GlobalScope.launch {
                     getReceiveChannel()
                         .basicPublish(
                             EXCHANGE,
@@ -83,18 +91,21 @@ class RabbitTaskMessagingService : TaskMessagingService {
                                 )
                             )
                         )
-                }
 
-                val output = runBlocking {
-                    GlobalScope.async { TaskRunnerFactory.createFromMessage(message) }.await()
-                }
+                    val output = runBlocking {
+                        GlobalScope.async { TaskRunnerFactory.createFromMessage(message) }.await()
+                    }
 
-                GlobalScope.launch {
                     getReceiveChannel()
-                        .basicPublish(EXCHANGE, REC_QUEUE, null, jsonMapper.writeValueAsBytes(output))
+                        .basicPublish(
+                            EXCHANGE,
+                            REC_QUEUE,
+                            null,
+                            jsonMapper.writeValueAsBytes(output)
+                        )
+                } catch (e: java.lang.Exception) {
+                    println("deliverCallback exc $e")
                 }
-            } catch (e: java.lang.Exception) {
-                println("deliverCallback exc $e")
             }
         }
         GlobalScope.launch {
@@ -104,8 +115,14 @@ class RabbitTaskMessagingService : TaskMessagingService {
         val deliverCallback2 = DeliverCallback { consumerTag: String?, delivery: Delivery ->
             try {
                 val message: TaskReceiveMessage = jsonMapper.readValue(delivery.body)
-                println("Task receive ${message.javaClass.name}  ${message.elementId}")
+                println("Task receive ${message.javaClass.simpleName}  ${message.elementId}")
                 GlobalScope.launch { handleMessage(message) }
+
+                if(message is TaskFailedMessage){
+                    println(message.error)
+                }
+
+
             } catch (e: java.lang.Exception) {
                 println("deliverCallback2 exc $e")
             }
@@ -160,29 +177,7 @@ class RabbitTaskMessagingService : TaskMessagingService {
     }
 
     override suspend fun dispatchMessage(message: TaskSendMessage) {
-        GlobalScope.launch {
-            getChannel().basicPublish(EXCHANGE, QUEUE, null, jsonMapper.writeValueAsBytes(message))
-        }
-        //        delay(100)
-        //        handleMessage(
-        //            TaskStartMessage(
-        //                instanceId = message.instanceId,
-        //                taskId = message.taskId,
-        //                elementId = message.elementId,
-        //                threadId = message.threadId,
-        //            )
-        //        )
-        //        delay(100 + ((0..0).random()).toLong())
-        //
-        //        handleMessage(
-        //            TaskCompleteMessage(
-        //                instanceId = message.instanceId,
-        //                taskId = message.taskId,
-        //                taskVariables = mutableMapOf("testkey" to "key"),
-        //                elementId = message.elementId,
-        //                threadId = message.threadId,
-        //            )
-        //        )
+        getChannel().basicPublish(EXCHANGE, QUEUE, null, jsonMapper.writeValueAsBytes(message))
     }
 
     override suspend fun handleMessage(message: TaskReceiveMessage) {

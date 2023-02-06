@@ -11,5 +11,7 @@ typealias EventId = String
 
 interface ActivityEventLogService : DatabaseConnector {
     suspend fun addEvent(event: LoggedEventDocument)
-    suspend fun getEvent(taskId: String, threadId: String, eventState: EventState? = null): LoggedEventDocument?
+    suspend fun getEvent(elementId: String, threadId: String, eventState: EventState? = null): LoggedEventDocument?
+    suspend fun getEvent(taskId: String,  ): LoggedEventDocument?
+    suspend fun getEvents( eventState: EventState? = null): List<LoggedEventDocument>
 }

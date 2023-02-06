@@ -7,7 +7,7 @@ import org.koin.core.component.KoinComponent
 
 interface MessageHandler {
     val message: Message
-    suspend fun handle()
+    suspend fun handle():String
 
 
 }

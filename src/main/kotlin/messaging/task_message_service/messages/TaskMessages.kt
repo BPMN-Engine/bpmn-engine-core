@@ -9,6 +9,7 @@ import engine.process_manager.models.Variables
 @JsonSubTypes(
     JsonSubTypes.Type(value = StartEventMessage::class, name = "StartEventMessage"),
     JsonSubTypes.Type(value = ServiceTaskMessage::class, name = "ServiceTaskMessage"),
+    JsonSubTypes.Type(value = UserFromMessage::class, name = "UserFromMessage"),
 )
 abstract class TaskSendMessage(
     open val instanceId: String,

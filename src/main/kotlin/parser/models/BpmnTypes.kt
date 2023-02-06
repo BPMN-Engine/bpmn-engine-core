@@ -1,4 +1,7 @@
+import bpmn.jsonMapper
 import com.fasterxml.jackson.annotation.JsonFormat
+import com.fasterxml.jackson.module.kotlin.readValue
+import org.litote.kmongo.json
 
 data class BpmnModel(
     @JsonFormat(with = [JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY])
@@ -35,24 +38,30 @@ abstract class ExtensionElements(
 
 data class BasicExtensionElements(
     override val ioMapping: IoMapping?,
-    private val taskHeaders: Map<String, List<*>>?
+    private val taskHeaders: Map<String, List<*>>?,
 ) : ExtensionElements(ioMapping) {
 
     var url = url()
     var method = method()
 
-    private fun getHeaderValue(key: String): String? {
+      fun getHeaderValue(key: String): String? {
         val header = taskHeaders?.get("header")
 
-            val el = header?.find { (it as Map<*, *>)["key"] == key } as Map<*, *>?
+        val el = header?.find { (it as Map<*, *>)["key"] == key } as Map<*, *>?
 
-            return el?.get("value")?.toString()
-        }
+        return el?.get("value") as String?
+    }
 
+    private fun getHeaderValueMap(key: String): Map<String, String>? {
+        val header = taskHeaders?.get("header")
 
+        val el = header?.find { (it as Map<*, *>)["key"] == key } as Map<*, *>?
+
+        return el?.get("value") as Map<String, String>?
+    }
 
     private fun url() = getHeaderValue("url")
-    private fun method() = getHeaderValue("method")?:"GET"
+    private fun method() = getHeaderValue("method") ?: "GET"
 }
 
 data class IoMapping(val input: MutableList<Mapping>?, val output: MutableList<Mapping>?)

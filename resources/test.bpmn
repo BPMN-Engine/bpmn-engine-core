@@ -4,19 +4,39 @@
     <bpmn:participant id="Participant_12h6dmr" name="test" processRef="Process_0c2yfbx" />
   </bpmn:collaboration>
   <bpmn:process id="Process_0c2yfbx" name="test" isExecutable="true">
-    <bpmn:extensionElements />
+    <bpmn:extensionElements>
+      <zeebe:userTaskForm id="userTaskForm_0sughq1">  {
+    "form": [
+      {
+        "key": "informations",
+        "properties": [
+          "key": "identifier",
+          "title": "This is my title",
+          "description": "This is my description",
+          "type": "text",
+          "is_mandatory": false,
+          "readOnly": true,
+          "validations": {
+                "message": "This is my message",
+            "length": {"min": 10, "max": 20},
+          }
+        ]
+      }
+    ]
+  }</zeebe:userTaskForm>
+    </bpmn:extensionElements>
     <bpmn:startEvent id="StartEvent_1" name="start">
       <bpmn:outgoing>Flow_1wrwfgk</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:endEvent id="end" name="end">
       <bpmn:incoming>Flow_0xsiwux</bpmn:incoming>
+      <bpmn:incoming>Flow_1kc9i7u</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:parallelGateway id="Fork" name="Fork">
-      <bpmn:incoming>Flow_1wrwfgk</bpmn:incoming>
       <bpmn:outgoing>Flow_16deywg</bpmn:outgoing>
       <bpmn:outgoing>Flow_1jx95zy</bpmn:outgoing>
     </bpmn:parallelGateway>
-    <bpmn:sequenceFlow id="Flow_1wrwfgk" sourceRef="StartEvent_1" targetRef="Fork" />
+    <bpmn:sequenceFlow id="Flow_1wrwfgk" sourceRef="StartEvent_1" targetRef="Activity_0ntr98e" />
     <bpmn:sequenceFlow id="Flow_16deywg" sourceRef="Fork" targetRef="st1" />
     <bpmn:sequenceFlow id="Flow_1eha2ao" sourceRef="st1" targetRef="st3" />
     <bpmn:sequenceFlow id="Flow_1jx95zy" sourceRef="Fork" targetRef="st2" />
@@ -70,6 +90,16 @@
       <bpmn:incoming>Flow_16deywg</bpmn:incoming>
       <bpmn:outgoing>Flow_1eha2ao</bpmn:outgoing>
     </bpmn:serviceTask>
+    <bpmn:userTask id="Activity_0ntr98e" name="usertaskic">
+      <bpmn:extensionElements>
+        <zeebe:taskHeaders>
+          <zeebe:header key="form" value="  {     &#34;form&#34;: [       {         &#34;key&#34;: &#34;informations&#34;,         &#34;properties&#34;: [      {               &#34;key&#34;: &#34;identifier&#34;,           &#34;fields&#34;: [&#34;1&#34;, &#34;2&#34;, &#34;3&#34;, &#34;4&#34;, &#34;5&#34;],           &#34;title&#34;: &#34;This is my title&#34;,           &#34;description&#34;: &#34;This is my description&#34;,           &#34;type&#34;: &#34;checkbox&#34;      }         ]       }     ]   }" />
+        </zeebe:taskHeaders>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1wrwfgk</bpmn:incoming>
+      <bpmn:outgoing>Flow_1kc9i7u</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_1kc9i7u" sourceRef="Activity_0ntr98e" targetRef="end" />
   </bpmn:process>
   <bpmn:message id="Message_201eajg" name="Message_201eajg">
     <bpmn:extensionElements>
@@ -122,11 +152,15 @@
         <dc:Bounds x="420" y="150" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1nyxmt7_di" bpmnElement="Activity_0ntr98e">
+        <dc:Bounds x="340" y="370" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_1wrwfgk_di" bpmnElement="Flow_1wrwfgk">
         <di:waypoint x="215" y="281" />
         <di:waypoint x="265" y="281" />
-        <di:waypoint x="265" y="260" />
-        <di:waypoint x="315" y="260" />
+        <di:waypoint x="265" y="410" />
+        <di:waypoint x="340" y="410" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_16deywg_di" bpmnElement="Flow_16deywg">
         <di:waypoint x="340" y="235" />
@@ -159,6 +193,11 @@
       <bpmndi:BPMNEdge id="Flow_0xsiwux_di" bpmnElement="Flow_0xsiwux">
         <di:waypoint x="735" y="260" />
         <di:waypoint x="792" y="260" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1kc9i7u_di" bpmnElement="Flow_1kc9i7u">
+        <di:waypoint x="440" y="410" />
+        <di:waypoint x="810" y="410" />
+        <di:waypoint x="810" y="278" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

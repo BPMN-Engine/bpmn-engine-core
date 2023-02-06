@@ -10,6 +10,7 @@ import engine.messaging.task_message_service.messages.StartEventMessage
 import engine.messaging.task_message_service.messages.TaskSendMessage
 import engine.messaging.task_message_service.messages.UserFromMessage
 import engine.process_manager.models.Variables
+import engine.process_manager.taskExecutor
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -48,6 +49,10 @@ object TaskRunnerFactory {
             )
         }
     }
+
+    fun isMessageHandledInternally(message: TaskSendMessage): Boolean {
+        return message !is UserFromMessage
+    }
 }
 
 interface TaskRunner {
@@ -78,7 +83,7 @@ class ServiceTaskRunner(override val task: ServiceTaskMessage) : TaskRunner {
                 .build()
 
         val response =
-            GlobalScope.async(Dispatchers.IO) {
+            GlobalScope.async(taskExecutor) {
                     client.send(request, HttpResponse.BodyHandlers.ofString())
                 }
                 .await()

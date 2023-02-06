@@ -10,14 +10,14 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import org.koin.core.component.inject
 import org.koin.core.qualifier.named
 
-class StartInstanceMessageHandler(override val message: StartInstanceMessage) : InstanceMessageHandler {
+class StartInstanceMessageHandler(override val message: StartInstanceMessage) :
+    InstanceMessageHandler {
 
     private val modelsDatabase: ModelsDatabase by inject()
     private val instanceLogService: InstanceLogService by inject()
     private val taskMessages: MutableSharedFlow<TaskSendMessage> by inject(named<TaskSendMessage>())
 
-
-    override suspend fun handle() {
+    override suspend fun handle(): String {
         val it = message
 
         val model = modelsDatabase.getModelById(it.modelId)
@@ -39,7 +39,6 @@ class StartInstanceMessageHandler(override val message: StartInstanceMessage) : 
             )
         )
 
+        return instanceId
     }
-
-
 }

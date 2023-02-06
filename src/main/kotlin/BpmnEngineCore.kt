@@ -1,6 +1,7 @@
 package engine
 
 
+import RPCServer
 import engine.messaging.instance_message_service.InstanceMessagingService
 import engine.messaging.instance_message_service.messages.StartInstanceMessage
 import engine.messaging.task_message_service.TaskMessagingService
@@ -28,11 +29,13 @@ class BpmnEngineCore : KoinComponent {
     private val processManager: ProcessManager by inject()
     private val instanceMessagingService: InstanceMessagingService by inject()
     private val taskMessagingService: TaskMessagingService by inject()
+    private val rpcServer: RPCServer by inject()
 
     suspend fun run() {
         val job = processManager.setup()
         job.start()
 
+        rpcServer.setup()
         instanceMessagingService.setup()
         taskMessagingService.setup()
 
@@ -41,7 +44,7 @@ class BpmnEngineCore : KoinComponent {
             delay(100)
 
             val duration = measureTimeMillis {
-                repeat(1000) {
+                repeat(100) {
                     println(Instant.now().toEpochMilli())
                     instanceMessagingService.handleMessage(
                         StartInstanceMessage(
@@ -56,7 +59,7 @@ class BpmnEngineCore : KoinComponent {
 
         }
 
-
+        println("Engine running")
         job.join()
         /*
 

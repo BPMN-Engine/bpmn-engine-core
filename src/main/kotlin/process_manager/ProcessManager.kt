@@ -15,6 +15,7 @@ import engine.messaging.receive_message.TaskStartMessage
 import engine.messaging.task_message_service.messages.ServiceTaskMessage
 import engine.messaging.task_message_service.messages.StartEventMessage
 import engine.messaging.task_message_service.messages.TaskSendMessage
+import engine.messaging.task_message_service.messages.UserFromMessage
 import engine.parser.models.*
 import engine.process_manager.message_handlers.MessageHandlerFactory
 import engine.process_manager.models.Variables
@@ -27,6 +28,7 @@ import engine.storage_services.instance_log.InstanceLogService
 import engine.storage_services.models_database.ModelsDatabase
 import java.time.Instant
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -34,10 +36,9 @@ import kotlinx.coroutines.sync.Semaphore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.qualifier.named
-import java.util.concurrent.ConcurrentHashMap
 
 private val semaphoreMap = ConcurrentHashMap<String, Semaphore>()
- val taskExecutor = Executors.newFixedThreadPool(1000).asCoroutineDispatcher()
+val taskExecutor = Executors.newFixedThreadPool(1000).asCoroutineDispatcher()
 
 class ProcessManager : KoinComponent {
     private val modelsDatabase: ModelsDatabase by inject()
@@ -50,8 +51,6 @@ class ProcessManager : KoinComponent {
         inject(named<TaskReceiveMessage>())
 
     private val instanceExecutor = Executors.newFixedThreadPool(1000).asCoroutineDispatcher()
-
-
 
     suspend fun setup(): Job {
         setupDatabases()
@@ -82,7 +81,7 @@ class ProcessManager : KoinComponent {
         }
     }
 
-    private fun CoroutineScope.handleInstanceMessage(it: InstanceMessage) {
+    fun CoroutineScope.handleInstanceMessage(it: InstanceMessage) {
         launch(instanceExecutor) { MessageHandlerFactory.fromMessage(it).handle() }
     }
 
@@ -153,6 +152,23 @@ class ProcessManager : KoinComponent {
 
         return runnableTasks
     }
+
+    suspend fun <T : DirectedElement> getElement(taskId: String): T {
+        val log = activityLogService.getEvent(taskId, )!!
+return  getElementFromLogItem(log)
+
+    }
+    suspend fun <T : DirectedElement> getElementFromLogItem(log: LoggedEventDocument): T {
+        val instance = instanceLogService.getInstance(log.instanceId)
+
+        val model = modelsDatabase.getModelById(instance.modelId)
+
+        val process = model.getProcessById(instance.processId)
+
+        val currentTask: DirectedElement = process.elementForId(log.elementId)
+        return currentTask as T
+    }
+
 
     private suspend fun handleTaskReceiveMessage(it: TaskReceiveMessage) {
 
@@ -264,7 +280,17 @@ class ProcessManager : KoinComponent {
                                 )
                             )
                         }
-                        is UserTask -> {}
+                        is UserTask -> {
+                            taskMessages.emit(
+                                UserFromMessage(
+                                    sendVariables = mapOf(),
+                                    instanceId = it.instanceId,
+                                    taskId = UUID.randomUUID().toString().replace("-", ""),
+                                    threadId = el.threadId,
+                                    elementId = el.runnable.id
+                                )
+                            )
+                        }
                         is StartEvent -> {
                             taskMessages.emit(
                                 StartEventMessage(
@@ -278,16 +304,14 @@ class ProcessManager : KoinComponent {
                         }
                     }
 
-                    println("Sent ${el.runnable.name}")
-                    if(el.runnable.name=="end")
+                    println("Running ${el.runnable.name}")
+                    if (el.runnable.name == "end")
                         println("Workflow done ${Instant.now().toEpochMilli()}")
-
                 }
             }
         }
 
         if (currentTask is EndEvent) {
-
 
             println("Workflow done ${Instant.now().toEpochMilli()}")
         }
@@ -303,5 +327,9 @@ class ProcessManager : KoinComponent {
         }
 
         return newMapping
+    }
+
+    suspend fun getRunningTasks(): List<LoggedEventDocument> {
+        return activityLogService.getEvents(EventState.RUNNING)
     }
 }

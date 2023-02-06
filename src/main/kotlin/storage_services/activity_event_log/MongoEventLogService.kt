@@ -33,6 +33,14 @@ class MongoEventLogService : ActivityEventLogService, KoinComponent {
         )
     }
 
+    override suspend fun getEvent(taskId: String): LoggedEventDocument? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getEvents(eventState: EventState?): List<LoggedEventDocument> {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun connectToDatabase() {
         val client: CoroutineClient by inject()
 

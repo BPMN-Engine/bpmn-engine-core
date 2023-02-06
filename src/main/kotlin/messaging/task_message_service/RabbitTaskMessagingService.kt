@@ -10,6 +10,7 @@ import engine.messaging.receive_message.TaskReceiveMessage
 import engine.messaging.receive_message.TaskStartMessage
 import engine.messaging.task_message_service.messages.TaskSendMessage
 import engine.process_manager.runners.TaskRunnerFactory
+import engine.process_manager.taskExecutor
 import java.util.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
@@ -24,9 +25,6 @@ class RabbitTaskMessagingService : TaskMessagingService {
     private val taskReceiveMessage: MutableSharedFlow<TaskReceiveMessage> by
         inject(named<TaskReceiveMessage>())
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val taskExecutor = Dispatchers.IO.limitedParallelism(1000)
-
     private val connectionFactory: ConnectionFactory = ConnectionFactory()
     private lateinit var connection: Connection
     private lateinit var sendChannel: Channel
@@ -38,9 +36,6 @@ class RabbitTaskMessagingService : TaskMessagingService {
         val EXCHANGE = "task_exchange$newq"
         val QUEUE = "send_message_queue$newq"
         val REC_QUEUE = "rec_message_queue$newq"
-
-
-
     }
 
     init {
@@ -92,17 +87,22 @@ class RabbitTaskMessagingService : TaskMessagingService {
                             )
                         )
 
-                    val output = runBlocking {
-                        GlobalScope.async { TaskRunnerFactory.createFromMessage(message) }.await()
-                    }
+                    if (TaskRunnerFactory.isMessageHandledInternally(message)) {
+                        val output = runBlocking {
+                            GlobalScope.async(taskExecutor) {
+                                    TaskRunnerFactory.createFromMessage(message)
+                                }
+                                .await()
+                        }
 
-                    getReceiveChannel()
-                        .basicPublish(
-                            EXCHANGE,
-                            REC_QUEUE,
-                            null,
-                            jsonMapper.writeValueAsBytes(output)
-                        )
+                        getReceiveChannel()
+                            .basicPublish(
+                                EXCHANGE,
+                                REC_QUEUE,
+                                null,
+                                jsonMapper.writeValueAsBytes(output)
+                            )
+                    }
                 } catch (e: java.lang.Exception) {
                     println("deliverCallback exc $e")
                 }
@@ -113,18 +113,18 @@ class RabbitTaskMessagingService : TaskMessagingService {
         }
 
         val deliverCallback2 = DeliverCallback { consumerTag: String?, delivery: Delivery ->
-            try {
-                val message: TaskReceiveMessage = jsonMapper.readValue(delivery.body)
-                println("Task receive ${message.javaClass.simpleName}  ${message.elementId}")
-                GlobalScope.launch { handleMessage(message) }
+            GlobalScope.launch(taskExecutor) {
+                try {
+                    val message: TaskReceiveMessage = jsonMapper.readValue(delivery.body)
+                    println("Task receive ${message.javaClass.simpleName}  ${message.elementId}")
+                    launch(taskExecutor) { handleMessage(message) }
 
-                if(message is TaskFailedMessage){
-                    println(message.error)
+                    if (message is TaskFailedMessage) {
+                        println(message.error)
+                    }
+                } catch (e: java.lang.Exception) {
+                    println("deliverCallback2 exc $e")
                 }
-
-
-            } catch (e: java.lang.Exception) {
-                println("deliverCallback2 exc $e")
             }
         }
         GlobalScope.launch {

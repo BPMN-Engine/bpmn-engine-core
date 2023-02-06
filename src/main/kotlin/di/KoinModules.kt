@@ -1,5 +1,6 @@
 package engine.shared
 
+import RPCServer
 import com.mongodb.ConnectionString
 import com.mongodb.MongoClientSettings
 import engine.database_connector.activity_event_log.ActivityEventLogService
@@ -37,6 +38,7 @@ val koinModule = module {
     single(named<TaskSendMessage>()) { MutableSharedFlow<TaskSendMessage>(extraBufferCapacity = 0) }
     single(named<TaskReceiveMessage>()) { MutableSharedFlow<TaskReceiveMessage>(extraBufferCapacity = 0) }
     single { ProcessManager() }
+    single { RPCServer() }
 
     single<CoroutineClient>(createdAtStart = true) {
         KMongo.createClient(

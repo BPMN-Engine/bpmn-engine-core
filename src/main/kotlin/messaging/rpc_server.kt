@@ -24,11 +24,7 @@ class RPCServer : KoinComponent {
 
     private val RPC_QUEUE_NAME = "rpc_queue"
 
-    private fun fib(n: Int): Int {
-        if (n == 0) return 0
-        return if (n == 1) 1 else fib(n - 1) + fib(n - 2)
-    }
-
+ 
     @OptIn(DelicateCoroutinesApi::class)
     suspend fun setup() {
         val factory = ConnectionFactory()
